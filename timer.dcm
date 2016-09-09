@@ -1,0 +1,30 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP CONN_ARDUINO_PRO_MINI_13_24
+D Connector pins 13-24 for Arduino Pro Mini, single row, 01x12
+K connector
+$ENDCMP
+#
+$CMP CONN_ARDUINO_PRO_MINI_1_12
+D Connector for pins 1-12 Arduino Pro Mini, single row, 01x12
+K connector
+$ENDCMP
+#
+$CMP CONN_HD44780
+D Connector for HD44780 display, single row, 01x16
+K connector
+F http://fab.cba.mit.edu/classes/863.06/11.13/44780.pdf
+$ENDCMP
+#
+$CMP CONN_SPI
+D Connector SPI, double row, 02x03
+K connector
+$ENDCMP
+#
+$CMP FQP30N06
+D 100V Vds, 33A Id, HEXFET N-Channel MOSFET, TO-220
+K HEXFET N-Channel MOSFET
+F http://www.irf.com/product-info/datasheets/data/irf540n.pdf
+$ENDCMP
+#
+#End Doc Library

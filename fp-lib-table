@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name resistor-th)(type KiCad)(uri "$(KIPRJMOD)\\resistor-th.pretty")(options "")(descr ""))
+)
