@@ -46,6 +46,7 @@
 #include "config.h"
 #include "hd44780.h"
 #include "print.h"
+#include "rotary.h"
 
 int main(int argc, char *argv[])
 {
@@ -65,12 +66,18 @@ int main(int argc, char *argv[])
         	    HD44780_CMD_EMS_INCR);
    hd44780_wait_busy();
 
+   rotary_init();
+   
    sei();
 
    hd44780_print_reset();
    
    hd44780_printf("Hello UV-Timer!\n");
-   while(1) {}
+   while(1) {
+      hd44780_printf("%08lx %08lx\r",
+                     rotary_get_rotary_counter(),
+                     rotary_get_press_counter());
+   }
    
    return 0;
 }
