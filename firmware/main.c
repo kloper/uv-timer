@@ -47,6 +47,33 @@
 #include "hd44780.h"
 #include "print.h"
 #include "rotary.h"
+#include "term.h"
+#include "timer.h"
+
+typedef struct _uv_timer_ui {
+   uv_label_t heading;
+   uv_button_t mode;
+   uv_button_t start;
+   uv_button_t stop;
+   uv_label_t ws;
+   uv_label_t colon;
+   uv_label_t placeholder;
+   uv_frame_t frame;
+} uv_timer_ui_t;
+
+static uv_timer_ui_t g_timer_ui;
+
+void change_mode(uint8_t *data)
+{
+}
+
+void start_countdown(uint8_t *data)
+{
+}
+
+void stop_countdown(uint8_t *data)
+{
+}
 
 int main(int argc, char *argv[])
 {
@@ -67,16 +94,98 @@ int main(int argc, char *argv[])
    hd44780_wait_busy();
 
    rotary_init();
-   
+   uv_timer_init();
+
    sei();
 
    hd44780_print_reset();
    
-   hd44780_printf("Hello UV-Timer!\n");
+   /* hd44780_ir_write(HD44780_CMD_SET_CGRAM_ADDR); */
+   /* hd44780_wait_busy(); */
+   /* hd44780_dr_write(0xe); */
+   /* hd44780_wait_busy(); */
+   /* hd44780_dr_write(0x4); */
+   /* hd44780_wait_busy(); */
+   /* hd44780_dr_write(0xa); */
+   /* hd44780_wait_busy(); */
+   /* hd44780_dr_write(0xe); */
+   /* hd44780_wait_busy(); */
+   /* hd44780_dr_write(0xe); */
+   /* hd44780_wait_busy(); */
+   /* hd44780_dr_write(0xe); */
+   /* hd44780_wait_busy(); */
+   /* hd44780_dr_write(0xe); */
+   /* hd44780_wait_busy(); */
+   /* hd44780_dr_write(0x0); */
+   /* hd44780_wait_busy(); */
+
+   /* hd44780_ir_write(HD44780_CMD_SET_DDRAM_ADDR); */
+   /* hd44780_printf("Hello UV-Timer!\n");    */
+   /* hd44780_dr_write(0); */
+   /* hd44780_wait_busy(); */
+   /* hd44780_dr_write('M'); */
+   /* hd44780_wait_busy(); */
+
+   
+   uv_label_init(&g_timer_ui.heading, "\fHello UV-Timer\n");
+   uv_label_init(&g_timer_ui.ws, " ");   
+   uv_label_init(&g_timer_ui.colon, ":");
+   uv_label_init(&g_timer_ui.placeholder, "__");      
+   uv_button_init(&g_timer_ui.mode, "MODE", change_mode,
+                  (uint8_t*)&g_timer_ui);
+   uv_button_init(&g_timer_ui.start, "START", start_countdown,
+                  (uint8_t*)&g_timer_ui);
+   uv_button_init(&g_timer_ui.stop, "STOP", stop_countdown,
+                  (uint8_t*)&g_timer_ui);
+   uv_frame_init(&g_timer_ui.frame);
+   
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.heading.base);
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.mode.base);
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.ws.base);
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.placeholder.base);
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.colon.base);   
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.placeholder.base);
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.colon.base);      
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.placeholder.base);   
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.ws.base);
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.start.base);
+
+   uv_frame_dispatch(&g_timer_ui.frame, FORWARD, 0);
+   uv_frame_render(&g_timer_ui.frame);
+   
+   int32_t prev_rotary_counter = rotary_get_rotary_counter();
+   uint32_t prev_press_counter = rotary_get_press_counter();
+   uint32_t prev_timer_value = uv_timer_get();
+   
    while(1) {
-      hd44780_printf("%08lx %08lx\r",
-                     rotary_get_rotary_counter(),
-                     rotary_get_press_counter());
+      int32_t rotary_counter = rotary_get_rotary_counter();
+      uint32_t press_counter = rotary_get_press_counter();
+      uint32_t timer_value = uv_timer_get();
+   
+      if( prev_rotary_counter < rotary_counter ) {
+         uv_frame_dispatch(&g_timer_ui.frame, FORWARD,
+                           rotary_counter-prev_rotary_counter);
+         uv_frame_render(&g_timer_ui.frame);
+      } else if( prev_rotary_counter > rotary_counter ) {
+         uv_frame_dispatch(&g_timer_ui.frame, BACKWARD,
+                           prev_rotary_counter - rotary_counter);
+         uv_frame_render(&g_timer_ui.frame);
+      }
+
+      if( prev_press_counter < press_counter ) {
+         uv_frame_dispatch(&g_timer_ui.frame, PRESS,
+                           press_counter - prev_press_counter);
+         uv_frame_render(&g_timer_ui.frame);
+      }
+
+      if( timer_value - prev_timer_value >= 500 ) {
+         uv_frame_dispatch(&g_timer_ui.frame, TICK, 0);
+         uv_frame_render(&g_timer_ui.frame);
+		 prev_timer_value = timer_value;
+      }
+      
+      prev_rotary_counter = rotary_counter;
+      prev_press_counter = press_counter;
    }
    
    return 0;
