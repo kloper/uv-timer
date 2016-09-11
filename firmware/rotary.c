@@ -65,8 +65,6 @@ ISR(PCINT1_vect)
 
 ISR(TIMER0_COMPA_vect)
 {
-   PINC |= 1<<PC5;
-   
    TCCR0B = 0; 
 
    uint8_t state = PINC;
@@ -95,7 +93,6 @@ ISR(TIMER0_COMPA_vect)
 
 void rotary_init(void)
 {   
-   DDRC |= (1<<PC5);
    DDRC &= ~((1<<ROTA)|(1<<ROTB)|(1<<ROTP));
 
    PCMSK1 |= (1<<ROTA)|(1<<ROTB)|(1<<ROTP);
