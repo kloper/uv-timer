@@ -42,7 +42,7 @@
 
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
-#define F_CPU 8000000
+#define F_CPU 16000000
 #define HAVE_PRINT
 #define HAVE_PRINTF
 #endif
