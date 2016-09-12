@@ -254,16 +254,56 @@ void uv_counter_init(uv_counter_t *counter,
 }
 
 
+static
+uint32_t uv_grabber_forward(uv_widget_t *widget,
+                            uint32_t event_data)
+{
+   return 1;
+}
+
+static
+uint32_t uv_grabber_backward(uv_widget_t *widget,
+                             uint32_t event_data)
+{
+   return 1;
+}
+
+void uv_grabber_init(uv_grabber_t *grabber, const char *text,
+                    uv_action_callback_t press_callback,
+                    uint8_t *user_data)
+{
+   uv_button_init(grabber, text,
+                  press_callback, user_data);
+
+   grabber->base.on_forward = uv_grabber_forward;
+   grabber->base.on_backward = uv_grabber_backward;
+}
+
+
 void uv_frame_init(uv_frame_t *frame)
 {
    memset((uint8_t*)frame, '\0', sizeof(uv_frame_t));
 }
 
-int uv_frame_add_child(uv_frame_t *frame, uv_widget_t *widget)
+void uv_frame_reset(uv_frame_t *frame)
+{
+   if( frame->nchildren == 0 )
+      return 0;
+
+   uv_widget_t *w = frame->children[frame->focus];
+   w->on_event(w, FOCUS, 0);
+
+   frame->nchildren = 0;
+}
+
+int uv_frame_add_child(uv_frame_t *frame, uv_widget_t *widget, uint8_t focus)
 {
    if( frame->nchildren >= UV_FRAME_MAX_CHILDREN )
       return -1;
 
+   if(focus)
+      frame->focus = frame->nchildren;
+   
    frame->children[frame->nchildren++] = widget;
    
    return frame->nchildren-1;

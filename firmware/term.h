@@ -87,6 +87,8 @@ typedef struct _uv_button {
    uint8_t inverse_char;
 } uv_button_t;
 
+typedef  uv_button_t uv_grabber_t;
+
 typedef struct _uv_counter {
    uv_button_t base;
    uv_action_callback_t assign_action;
@@ -95,7 +97,7 @@ typedef struct _uv_counter {
    uint32_t max_value;
    uint32_t value;
    uint8_t disp_width;
-   char text[UV_COUNTER_MAX_WIDTH];
+   char text[UV_COUNTER_MAX_WIDTH+1];
    uint8_t *user_data;
 } uv_counter_t;
 
@@ -110,16 +112,22 @@ extern void uv_frame_init(uv_frame_t *frame);
 extern void uv_button_init(uv_button_t *button, const char *text,
                            uv_action_callback_t press_callback,
                            uint8_t *user_data);
-extern int uv_frame_add_child(uv_frame_t *frame, uv_widget_t *widget);
+extern int uv_frame_add_child(uv_frame_t *frame,
+                              uv_widget_t *widget,
+                              uint8_t focus);
 extern uint32_t uv_frame_dispatch(uv_frame_t *frame,
                                   uv_event_t event,
                                   uint32_t event_data);
 extern void uv_frame_render(uv_frame_t *frame);
+extern void uv_frame_reset(uv_frame_t *frame);
 extern void uv_counter_init(uv_counter_t *counter, 
                             uv_action_callback_t assign_action,
                             uint32_t min_value,
                             uint32_t max_value,
                             uint8_t disp_width,
+                            uint8_t *user_data);
+extern void uv_grabber_init(uv_grabber_t *grabber, const char *text,
+                            uv_action_callback_t press_callback,
                             uint8_t *user_data);
 
 #endif /* _uv_timer_term_h_ */
