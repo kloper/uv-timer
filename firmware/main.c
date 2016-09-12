@@ -57,8 +57,10 @@ typedef struct _uv_timer_ui {
    uv_button_t stop;
    uv_label_t ws;
    uv_label_t colon;
-   uv_label_t placeholder;
    uv_frame_t frame;
+   uv_counter_t hh;
+   uv_counter_t mm;
+   uv_counter_t ss;
 } uv_timer_ui_t;
 
 static uv_timer_ui_t g_timer_ui;
@@ -72,6 +74,18 @@ void start_countdown(uint8_t *data)
 }
 
 void stop_countdown(uint8_t *data)
+{
+}
+
+void hour_set(uint8_t *data)
+{
+}
+
+void minute_set(uint8_t *data)
+{
+}
+
+void second_set(uint8_t *data)
 {
 }
 
@@ -130,7 +144,6 @@ int main(int argc, char *argv[])
    uv_label_init(&g_timer_ui.heading, "\fHello UV-Timer\n");
    uv_label_init(&g_timer_ui.ws, " ");   
    uv_label_init(&g_timer_ui.colon, ":");
-   uv_label_init(&g_timer_ui.placeholder, "__");      
    uv_button_init(&g_timer_ui.mode, "MODE", change_mode,
                   (uint8_t*)&g_timer_ui);
    uv_button_init(&g_timer_ui.start, "START", start_countdown,
@@ -138,15 +151,21 @@ int main(int argc, char *argv[])
    uv_button_init(&g_timer_ui.stop, "STOP", stop_countdown,
                   (uint8_t*)&g_timer_ui);
    uv_frame_init(&g_timer_ui.frame);
+   uv_counter_init(&g_timer_ui.hh, hour_set,
+                   0, 23, 2, (uint8_t*)&g_timer_ui);
+   uv_counter_init(&g_timer_ui.mm, minute_set,
+                   0, 59, 2, (uint8_t*)&g_timer_ui);
+   uv_counter_init(&g_timer_ui.ss, second_set,
+                   0, 59, 2, (uint8_t*)&g_timer_ui);
    
    uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.heading.base);
    uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.mode.base);
    uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.ws.base);
-   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.placeholder.base);
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.hh.base.base);
    uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.colon.base);   
-   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.placeholder.base);
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.mm.base.base);
    uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.colon.base);      
-   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.placeholder.base);   
+   uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.ss.base.base);   
    uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.ws.base);
    uv_frame_add_child(&g_timer_ui.frame, &g_timer_ui.start.base);
 

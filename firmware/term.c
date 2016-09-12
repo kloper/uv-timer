@@ -39,6 +39,7 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include <avr/eeprom.h>
 
@@ -115,7 +116,7 @@ const char *uv_button_render(uv_widget_t *widget) {
 
    int inverse_text_len = min(sizeof(g_inverse_text)-1,
                               strlen(button->text));
-   memset(g_inverse_text, 0xfd, inverse_text_len);
+   memset(g_inverse_text, button->inverse_char, inverse_text_len);
    g_inverse_text[inverse_text_len] = 0;
 
    return g_inverse_text;   
@@ -167,10 +168,89 @@ void uv_button_init(uv_button_t *button, const char *text,
    button->base.on_press = uv_button_press;
    button->base.on_tick = uv_button_tick;
    
-   button->text = text;
+   button->text = text;   
    button->press_action = press_callback;
    button->inverse_text = 0;
+   button->inverse_char = 0xfd;
    button->user_data = user_data;
+}
+
+static
+void uv_counter_press(uint8_t *data)
+{
+   uv_counter_t *counter = (uv_counter_t*)data;
+
+   counter->active = !counter->active;
+   if( counter->active ) 
+      counter->base.inverse_char = 0xfc;
+   else
+      counter->base.inverse_char = 0xfd;
+}
+
+static
+uint32_t uv_counter_forward(uv_widget_t *widget,
+                            uint32_t event_data)
+{
+   uv_counter_t *counter = (uv_counter_t*)widget;
+
+   if( !counter->active )
+      return 0;
+
+   uint32_t size = counter->max_value - counter->min_value + 1;
+   counter->value = (counter->value + event_data) % size;
+   
+   return 1;
+}
+
+static
+uint32_t uv_counter_backward(uv_widget_t *widget,
+                             uint32_t event_data)
+{
+   uv_counter_t *counter = (uv_counter_t*)widget;
+
+   if( !counter->active )
+      return 0;
+
+   uint32_t size = counter->max_value - counter->min_value + 1;
+   counter->value = (counter->value - event_data + size) % size;
+   
+   return 1;
+}
+
+static
+const char *uv_counter_render(uv_widget_t *widget) {
+   uv_counter_t *counter = (uv_counter_t*)widget;
+
+   int size = snprintf(counter->text, 0, "%ld", counter->value);
+
+   memset(counter->text, '0', counter->disp_width);
+   snprintf(counter->text + max(0, counter->disp_width - size),
+            size+1, "%ld", counter->value);
+   
+   return uv_button_render(&counter->base.base);
+}
+
+void uv_counter_init(uv_counter_t *counter, 
+                     uv_action_callback_t assign_action,
+                     uint32_t min_value,
+                     uint32_t max_value,
+                     uint8_t disp_width,
+                     uint8_t *user_data)
+{
+   uv_button_init(&counter->base, counter->text,
+                  uv_counter_press, (uint8_t*)counter);
+   
+   counter->base.base.render = uv_counter_render;
+   counter->base.base.on_forward = uv_counter_forward;
+   counter->base.base.on_backward = uv_counter_backward;
+   
+   counter->assign_action = assign_action;
+   counter->active = 0;
+   counter->min_value = min_value;
+   counter->max_value = max_value;
+   counter->value = min_value;
+   counter->disp_width = min(disp_width, sizeof(counter->text)-1);
+   counter->user_data = user_data;
 }
 
 

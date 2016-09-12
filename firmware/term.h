@@ -41,6 +41,7 @@
 #define _uv_timer_term_h_
 
 #define UV_FRAME_MAX_CHILDREN 16
+#define UV_COUNTER_MAX_WIDTH 8
 
 typedef enum _uv_event {
    PRESS,
@@ -83,7 +84,20 @@ typedef struct _uv_button {
    uv_action_callback_t press_action;
    uint8_t *user_data;
    uint8_t inverse_text;
+   uint8_t inverse_char;
 } uv_button_t;
+
+typedef struct _uv_counter {
+   uv_button_t base;
+   uv_action_callback_t assign_action;
+   uint8_t active;
+   uint32_t min_value;
+   uint32_t max_value;
+   uint32_t value;
+   uint8_t disp_width;
+   char text[UV_COUNTER_MAX_WIDTH];
+   uint8_t *user_data;
+} uv_counter_t;
 
 typedef struct _uv_frame {
    uv_widget_t *children[UV_FRAME_MAX_CHILDREN];
@@ -101,5 +115,11 @@ extern uint32_t uv_frame_dispatch(uv_frame_t *frame,
                                   uv_event_t event,
                                   uint32_t event_data);
 extern void uv_frame_render(uv_frame_t *frame);
+extern void uv_counter_init(uv_counter_t *counter, 
+                            uv_action_callback_t assign_action,
+                            uint32_t min_value,
+                            uint32_t max_value,
+                            uint8_t disp_width,
+                            uint8_t *user_data);
 
 #endif /* _uv_timer_term_h_ */
