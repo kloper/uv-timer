@@ -206,10 +206,14 @@ uint32_t uv_frame_dispatch(uv_frame_t *frame,
    while(1) {
       switch(event) {
          case FORWARD:
-            frame->focus = (frame->focus+1) % frame->nchildren;
+            frame->focus++;
+			if( frame->focus == frame->nchildren )
+				frame->focus = 0;
             break;
          case BACKWARD:
-            frame->focus = (frame->focus+1) % frame->nchildren;
+			if( frame->focus == 0 )
+				frame->focus = frame->nchildren;
+            frame->focus--;
             break;
          default:
             return 0;
