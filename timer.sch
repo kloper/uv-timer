@@ -791,8 +791,6 @@ Wire Notes Line
 	10000 2700 10000 2150
 Wire Notes Line
 	10000 2150 8900 2150
-Text Notes 5575 800  0    60   ~ 0
-BUG: PD1 is pin 1, \n         PD0 is pin 2
 $Comp
 L CONN_ARDUINO_PRO_MINI_1_12 P3
 U 1 1 57D2CBFA
