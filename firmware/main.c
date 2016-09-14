@@ -69,7 +69,7 @@ typedef struct _uv_timer_ui {
 static uv_timer_ui_t g_timer_ui;
 
 static
-void change_mode(uint8_t *data)
+void reset_ui(uint8_t *data)
 {
    uv_timer_ui_t *ui = (uv_timer_ui_t*)data;
 
@@ -96,8 +96,15 @@ void change_mode(uint8_t *data)
       uv_frame_add_child(&ui->frame, &ui->stop.base, 1);
    
    uv_frame_render(&g_timer_ui.frame);
+}
 
-   ui->disp_mode = !ui->disp_mode;   
+static
+void change_mode(uint8_t *data)
+{
+   uv_timer_ui_t *ui = (uv_timer_ui_t*)data;
+   
+   ui->disp_mode = !ui->disp_mode;
+   reset_ui(data);
 }
 
 static
@@ -106,7 +113,7 @@ void start_countdown(uint8_t *data)
    uv_timer_ui_t *ui = (uv_timer_ui_t*)data;
 
    ui->countdown_started = 1;
-   change_mode(data);
+   reset_ui(data);
 }
 
 static
@@ -115,7 +122,7 @@ void stop_countdown(uint8_t *data)
    uv_timer_ui_t *ui = (uv_timer_ui_t*)data;
 
    ui->countdown_started = 0;
-   change_mode(data);   
+   reset_ui(data);   
 }
 
 static
@@ -158,7 +165,7 @@ int main(int argc, char *argv[])
    uv_grabber_init(&g_timer_ui.stop, "STOP", stop_countdown,
                   (uint8_t*)&g_timer_ui);
    uv_counter_init(&g_timer_ui.hh, time_set,
-                   0, 23, 2, (uint8_t*)&g_timer_ui);
+                   0, 99, 2, (uint8_t*)&g_timer_ui);
    uv_counter_init(&g_timer_ui.mm, time_set,
                    0, 59, 2, (uint8_t*)&g_timer_ui);
    uv_counter_init(&g_timer_ui.ss, time_set,
@@ -169,7 +176,7 @@ int main(int argc, char *argv[])
    g_timer_ui.disp_mode = 1;
    g_timer_ui.countdown_started = 0;
    
-   change_mode((uint8_t*)&g_timer_ui);
+   reset_ui((uint8_t*)&g_timer_ui);
    
    int32_t prev_rotary_counter = rotary_get_rotary_counter();
    uint32_t prev_press_counter = rotary_get_press_counter();
