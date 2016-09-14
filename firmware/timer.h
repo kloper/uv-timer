@@ -40,7 +40,12 @@
 #ifndef _uv_timer_timer_h_
 #define _uv_timer_timer_h_
 
+typedef void (*uv_timer_alarm_callback_t)(void *data);
+
 extern void uv_timer_init(void);
 extern uint32_t uv_timer_get(void);
+extern void uv_timer_set_alarm(uint32_t delta,
+                               uv_timer_alarm_callback_t action,
+                               void * alarm_user_data);
 
 #endif /* _uv_timer_timer_h_ */

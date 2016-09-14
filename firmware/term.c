@@ -183,8 +183,11 @@ void uv_counter_press(uint8_t *data)
    counter->active = !counter->active;
    if( counter->active ) 
       counter->base.inverse_char = 0xfc;
-   else
+   else {
       counter->base.inverse_char = 0xfd;
+      if( counter->assign_action )
+         counter->assign_action(counter->user_data);
+   }
 }
 
 static
@@ -288,7 +291,7 @@ void uv_frame_init(uv_frame_t *frame)
 void uv_frame_reset(uv_frame_t *frame)
 {
    if( frame->nchildren == 0 )
-      return 0;
+      return;
 
    uv_widget_t *w = frame->children[frame->focus];
    w->on_event(w, FOCUS, 0);

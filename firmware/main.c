@@ -50,6 +50,8 @@
 #include "term.h"
 #include "timer.h"
 
+#define PWR_CTRL PC0
+
 typedef struct _uv_timer_ui {
    uv_label_t heading;
    uv_button_t mode;
@@ -64,6 +66,9 @@ typedef struct _uv_timer_ui {
    uv_counter_t seconds;
    uint8_t disp_mode;
    uint8_t countdown_started;
+   uint8_t stop_requested;
+   uint32_t alarm_value;
+   uint32_t remaining_value;      
 } uv_timer_ui_t;
 
 static uv_timer_ui_t g_timer_ui;
@@ -76,7 +81,7 @@ void reset_ui(uint8_t *data)
    uv_frame_reset(&ui->frame);
 
    uv_frame_add_child(&ui->frame, &ui->heading.base, 0);
-   uv_frame_add_child(&ui->frame, &ui->mode.base, 1);
+   uv_frame_add_child(&ui->frame, &ui->mode.base, 0);
    uv_frame_add_child(&ui->frame, &ui->ws.base, 0);
    
    if(ui->disp_mode) {
@@ -91,7 +96,7 @@ void reset_ui(uint8_t *data)
 
    uv_frame_add_child(&ui->frame, &ui->ws.base, 0);
    if(!ui->countdown_started)
-      uv_frame_add_child(&ui->frame, &ui->start.base, 0);
+      uv_frame_add_child(&ui->frame, &ui->start.base, 1);
    else
       uv_frame_add_child(&ui->frame, &ui->stop.base, 1);
    
@@ -108,9 +113,24 @@ void change_mode(uint8_t *data)
 }
 
 static
+void schedule_stop_countdown(void *data)
+{
+   uv_timer_ui_t *ui = (uv_timer_ui_t*)data;
+
+   PORTC &= ~(1<<PWR_CTRL);
+   ui->stop_requested = 1;
+}
+
+static
 void start_countdown(uint8_t *data)
 {
    uv_timer_ui_t *ui = (uv_timer_ui_t*)data;
+
+   if( ui->alarm_value == 0 )
+      return;
+   
+   uv_timer_set_alarm(ui->alarm_value, schedule_stop_countdown, data);
+   PORTC |= 1<<PWR_CTRL;
 
    ui->countdown_started = 1;
    reset_ui(data);
@@ -121,13 +141,41 @@ void stop_countdown(uint8_t *data)
 {
    uv_timer_ui_t *ui = (uv_timer_ui_t*)data;
 
+   PORTC &= ~(1<<PWR_CTRL);
+   
    ui->countdown_started = 0;
+   g_timer_ui.stop_requested = 0;
+   
    reset_ui(data);   
 }
 
 static
 void time_set(uint8_t *data)
 {
+   uv_timer_ui_t *ui = (uv_timer_ui_t*)data;
+   
+   if(ui->disp_mode) {
+      ui->alarm_value = (ui->hh.value * 60 * 60 +
+                         ui->mm.value * 60 +
+                         ui->ss.value) * 1000;
+   } else {
+      ui->alarm_value = ui->seconds.value * 1000;      
+   }
+
+   ui->remaining_value = ui->alarm_value;
+}
+
+static
+void show_remaining(uv_timer_ui_t *ui)
+{
+   uint32_t seconds = ui->remaining_value / 1000;            
+   uint32_t minutes = seconds / 60;
+   uint32_t hours = minutes / 60;
+
+   ui->ss.value = seconds - minutes * 60;
+   ui->mm.value = minutes - hours * 60;
+   ui->hh.value = hours;
+   ui->seconds.value = seconds;
 }
 
 int main(int argc, char *argv[])
@@ -151,6 +199,8 @@ int main(int argc, char *argv[])
    rotary_init();
    uv_timer_init();
 
+   DDRC |= 1<<PWR_CTRL;
+   
    sei();
 
    hd44780_print_reset();
@@ -175,12 +225,16 @@ int main(int argc, char *argv[])
 
    g_timer_ui.disp_mode = 1;
    g_timer_ui.countdown_started = 0;
+   g_timer_ui.alarm_value = 0;
+   g_timer_ui.stop_requested = 0;
+   g_timer_ui.remaining_value = 0;
    
    reset_ui((uint8_t*)&g_timer_ui);
    
    int32_t prev_rotary_counter = rotary_get_rotary_counter();
    uint32_t prev_press_counter = rotary_get_press_counter();
-   uint32_t prev_timer_value = uv_timer_get();
+   uint32_t prev_tick_value = uv_timer_get();
+   uint32_t prev_count_value = uv_timer_get();
    
    while(1) {
       int32_t rotary_counter = rotary_get_rotary_counter();
@@ -203,14 +257,30 @@ int main(int argc, char *argv[])
          uv_frame_render(&g_timer_ui.frame);
       }
 
-      if( timer_value - prev_timer_value >= 500 ) {
+      if( timer_value - prev_tick_value >= 500 ) {
          uv_frame_dispatch(&g_timer_ui.frame, TICK, 0);
          uv_frame_render(&g_timer_ui.frame);
-		 prev_timer_value = timer_value;
+         prev_tick_value = timer_value;
+         
       }
-      
+
       prev_rotary_counter = rotary_counter;
       prev_press_counter = press_counter;
+      
+      if( timer_value - prev_count_value >= 1000 ) {
+         if( g_timer_ui.countdown_started ) {
+            if( g_timer_ui.stop_requested ) {
+               stop_countdown(&g_timer_ui);
+               g_timer_ui.remaining_value = g_timer_ui.alarm_value;
+            } else {
+               g_timer_ui.remaining_value -= 1000;
+            }
+            show_remaining(&g_timer_ui);
+            uv_frame_render(&g_timer_ui.frame);
+            prev_count_value = timer_value;
+         }
+      }
+      
    }
    
    return 0;

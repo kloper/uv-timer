@@ -47,11 +47,16 @@
 #include "timer.h"
 
 static uint32_t g_uv_timer = 0;
+static uint32_t g_uv_alarm = 0;
+static uv_timer_alarm_callback_t g_alarm_action = NULL;
+static void *g_alarm_user_data = NULL;
 
 ISR(TIMER2_COMPA_vect)
 {
    PINC |= 1<<PC5;   
    g_uv_timer++;
+   if( g_alarm_action && g_uv_timer == g_uv_alarm )
+      g_alarm_action(g_alarm_user_data);
 }
 
 void uv_timer_init(void)
@@ -74,3 +79,15 @@ uint32_t uv_timer_get(void)
    sei();
    return value;
 }
+
+void uv_timer_set_alarm(uint32_t delta,
+                        uv_timer_alarm_callback_t action,
+                        void * alarm_user_data)
+{
+   cli();
+   g_uv_alarm = g_uv_timer + delta;
+   g_alarm_action = action;
+   g_alarm_user_data = alarm_user_data;
+   sei();
+}
+
