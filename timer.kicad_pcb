@@ -3,7 +3,7 @@
   (general
     (links 63)
     (no_connects 0)
-    (area 68.504999 86.284999 145.490001 142.950001)
+    (area 35.584001 86.284999 168.886 177.900001)
     (thickness 1.6)
     (drawings 13)
     (tracks 309)
@@ -13,6 +13,15 @@
   )
 
   (page A4)
+  (title_block
+    (title "Timer based on Arduino Pro Mini ")
+    (date 2016-09-15)
+    (rev v0.2)
+    (company "Dimitry Kloper")
+    (comment 1 kloper@users.sf.net)
+    (comment 2 https://github.com/kloper/uv-timer)
+  )
+
   (layers
     (0 F.Cu signal)
     (31 B.Cu signal)

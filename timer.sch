@@ -36,12 +36,12 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title ""
-Date ""
-Rev ""
-Comp ""
-Comment1 ""
-Comment2 ""
+Title "Timer based on Arduino Pro Mini "
+Date "2016-09-15"
+Rev "v0.2"
+Comp "Dimitry Kloper"
+Comment1 "kloper@users.sf.net"
+Comment2 "https://github.com/kloper/uv-timer"
 Comment3 ""
 Comment4 ""
 $EndDescr
@@ -83,8 +83,8 @@ L FQP30N06 Q1
 U 1 1 57C73479
 P 975 2200
 F 0 "Q1" H 1225 2275 50  0000 L CNN
-F 1 "FQP30N06" H 1225 2200 50  0000 L CNN
-F 2 "Power_Integrations:TO-220" H 1225 2125 50  0000 L CIN
+F 1 "FQP30N06" H 475 2300 50  0000 L CNN
+F 2 "Power_Integrations:TO-220" H 1225 2125 50  0001 L CIN
 F 3 "" H 975 2200 50  0000 L CNN
 	1    975  2200
 	-1   0    0    -1  
