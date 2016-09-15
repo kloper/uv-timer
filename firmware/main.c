@@ -150,8 +150,9 @@ void stop_countdown(uint8_t *data)
 
    uv_timer_set_alarm(0, NULL, NULL);
    
+   ui->alarm_value = ui->remaining_value;
    ui->countdown_started = 0;
-   g_timer_ui.stop_requested = 0;
+   ui->stop_requested = 0;
    
    reset_ui(data);   
 }
@@ -278,8 +279,8 @@ int main(int argc, char *argv[])
       if( timer_value - prev_count_value >= 1000 ) {
          if( g_timer_ui.countdown_started ) {
             if( g_timer_ui.stop_requested ) {
+               g_timer_ui.remaining_value = g_timer_ui.alarm_value; 
                stop_countdown(&g_timer_ui);
-               g_timer_ui.remaining_value = g_timer_ui.alarm_value;
             } else {
                g_timer_ui.remaining_value -=
                   min(1000, g_timer_ui.remaining_value);
