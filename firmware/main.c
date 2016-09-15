@@ -279,8 +279,9 @@ int main(int argc, char *argv[])
                stop_countdown(&g_timer_ui);
                g_timer_ui.remaining_value = g_timer_ui.alarm_value;
             } else {
-               g_timer_ui.remaining_value -= 1000;
-            }
+               g_timer_ui.remaining_value -=
+                  min(1000, g_timer_ui.remaining_value);
+            } 
             show_remaining(&g_timer_ui);
             uv_frame_render(&g_timer_ui.frame);
             prev_count_value = timer_value;
