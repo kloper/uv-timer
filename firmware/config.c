@@ -51,5 +51,6 @@ uv_timer_config_t EEMEM g_uv_timer_config = {
 
    /* uint8_t tty_height */ 4,   
    /* uint8_t tty_linemap[8] */ { 0, 20, 64, 84, 20, 40, 84, 104 },
-   /* uint8_t tty_policy */ (4<<1),   
+   /* uint8_t tty_policy */ (4<<1),
+   /* uint32_t alarm_value */ 0
 };

@@ -83,6 +83,7 @@ typedef struct _uv_timer_config {
    uint8_t tty_policy; /**< TTY configuration. See @ref tty_policy_t.
                           Default 0x08 */
 
+   uint32_t alarm_value; /**< Value of last timer alarm */
 } uv_timer_config_t;
 
 extern uv_timer_config_t EEMEM g_uv_timer_config;

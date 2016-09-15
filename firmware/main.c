@@ -128,6 +128,11 @@ void start_countdown(uint8_t *data)
 
    if( ui->alarm_value == 0 )
       return;
+
+   uint32_t eeprom_alarm_value =
+      eeprom_read_dword(&g_uv_timer_config.alarm_value);
+   if(eeprom_alarm_value != ui->alarm_value)
+      eeprom_write_dword(&g_uv_timer_config.alarm_value, ui->alarm_value);
    
    uv_timer_set_alarm(ui->alarm_value, schedule_stop_countdown, data);
    PORTC |= 1<<PWR_CTRL;
@@ -225,11 +230,12 @@ int main(int argc, char *argv[])
 
    g_timer_ui.disp_mode = 1;
    g_timer_ui.countdown_started = 0;
-   g_timer_ui.alarm_value = 0;
    g_timer_ui.stop_requested = 0;
-   g_timer_ui.remaining_value = 0;
+   g_timer_ui.alarm_value = eeprom_read_dword(&g_uv_timer_config.alarm_value);
+   g_timer_ui.remaining_value = g_timer_ui.alarm_value;
    
    reset_ui((uint8_t*)&g_timer_ui);
+   show_remaining(&g_timer_ui);
    
    int32_t prev_rotary_counter = rotary_get_rotary_counter();
    uint32_t prev_press_counter = rotary_get_press_counter();
