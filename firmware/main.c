@@ -147,6 +147,8 @@ void stop_countdown(uint8_t *data)
    uv_timer_ui_t *ui = (uv_timer_ui_t*)data;
 
    PORTC &= ~(1<<PWR_CTRL);
+
+   uv_timer_set_alarm(0, NULL, NULL);
    
    ui->countdown_started = 0;
    g_timer_ui.stop_requested = 0;
